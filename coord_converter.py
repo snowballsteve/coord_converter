@@ -1,10 +1,10 @@
-#!/bin/python
+#!/usr/bin/python
 __author__ = 'steve'
 
 import csv
 import argparse
 import os
-from from pyproj import Proj, transform
+from pyproj import Proj, transform
 
 class Coord_Converter_Error(Exception):
     pass
@@ -36,13 +36,13 @@ class Point:
 
     def transform(self,epsg):
         '''transforms x and y to new coordinate system and returns result'''
-        return transform(self.proj,Proj(init='epsg%d' %epsg),self.x,self.y)
+        return transform(self.proj,Proj(init='epsg:%d' %epsg),self.x,self.y)
 
     def transform_and_set(self,epsg):
         '''transforms coordinates and sets point to new system'''
         self.x, self.y = self.transform(epsg)
         self.epsg = epsg
-        self.proj = Proj(init='epsg%d' %epsg)
+        self.proj = Proj(init='epsg:%d' %epsg)
         return
 
 if __name__=='__main__':
@@ -54,7 +54,7 @@ if __name__=='__main__':
     parser.add_argument('-y','--y', type=str, help='Field of Y coordinate')
     parser.add_argument('-s','--s_srs',type=int, help='EPSG Code of input coordinates')
     parser.add_argument('-t','--t_srs',type=int, help='EPSG Code of output coordinates')
-    parser.add_argment('-o','--output',type=str,default='outfile.csv',,help='Output File')
+    parser.add_argument('-o','--output',type=str,default='outfile.csv',help='Output File')
     args = parser.parse_args()
 
     #error checks
@@ -64,7 +64,7 @@ if __name__=='__main__':
     if os.path.exists(args.output):
         print "Warning: Output File %s will be overwritten" % args.output
 
-    csv_reader = csv.DictReader(open(args.input,'wb'))
+    csv_reader = csv.DictReader(open(args.input,'rb'))
 
     if not args.x in csv_reader.fieldnames:
         raise Coord_Converter_Error("Column %s not Found in input file" %args.x)
@@ -72,10 +72,11 @@ if __name__=='__main__':
     if not args.y in csv_reader.fieldnames:
         raise Coord_Converter_Error("Column %s not Found in input file" %args.y)
 
-    csv_writer = csv.DictWriter(open(args.output,'wb'), fieldnames=csv_reader.fieldnames)
+    csv_writer = csv.DictWriter(open(args.output,'wb'), fieldnames=csv_reader.fieldnames+['x_%d'%args.t_srs,'y_%d'%args.t_srs])
+    csv_writer.writeheader()
 
     for row in csv_reader:
         p = Point(row[args.x],row[args.y],args.s_srs)
-        row['x'+_args.t_srs], ,row['y'+_args.t_srs] =  p.transform(args.t_srs)
+        row['x_%d'%args.t_srs], row['y_%d'%args.t_srs] =  p.transform(args.t_srs)
         csv_writer.writerow(row)
 
