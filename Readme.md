@@ -8,7 +8,7 @@ Performs simple spatial transformations on csv files
 First get the requirements
 
 ```bash
-pip install requirements.txt
+pip install -r requirements.txt
 ```
 
 Then
